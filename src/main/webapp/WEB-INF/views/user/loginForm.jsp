@@ -1,12 +1,21 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
-</head>
-<body>
-<h1>login file</h1>
-</body>
-</html>
+
+<%@ include file="../layout/header.jsp" %>
+
+<div class="container">
+	<form action="/login" method="post">
+	  <div class="form-group">
+	    <input type="text" name="username" class="form-control" placeholder="Enter username">
+	  </div>
+	  <div class="form-group">
+	    <input type="password" name="password" class="form-control" placeholder="Enter password">
+	  </div>
+	  <button type="submit" class="btn btn-primary">Submit</button>
+	</form>
+</div>
+
+
+
+
+<%@ include file="../layout/footer.jsp" %>
