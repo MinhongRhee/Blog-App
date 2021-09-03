@@ -4,11 +4,36 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.cos.blogapp.domain.user.User;
+import com.cos.blogapp.domain.user.UserRepository;
 import com.cos.blogapp.web.dto.LoginReqDto;
 
 @Controller
 public class UserController {
-
+	
+	private UserRepository userRepository;
+	
+	// DI
+	public UserController(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
+	
+	@GetMapping("/test/query/join")
+	public void testQueryJoin() {
+		userRepository.join("cos", "1234", "cos@nate.com");
+	}
+	
+	@GetMapping("/test/join")
+	public void testJoin() {
+		User user = new User();
+		user.setUsername("ssar");
+		user.setPassword("1234");
+		user.setEmail("ssar@nate.com");
+		
+		// insert into user(username, password, email) values ('ssar', '1234', 'ssar@nate.com')
+		userRepository.save(user);
+	}
+	
 	@GetMapping("/home")
 	public String home() {
 		return "home"; // ViewResolver가 발동
