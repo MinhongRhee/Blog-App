@@ -1,8 +1,15 @@
 package com.cos.blogapp.web;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -36,7 +43,7 @@ public class UserController {
 	}
 	
 	@PostMapping("/login")
-	public String login(LoginReqDto dto) {
+	public String login(@Valid LoginReqDto dto, BindingResult bindingResult, Model model) {
 		
 		// 1. username, password 받기
 		System.out.println(dto.getUsername());
@@ -44,25 +51,39 @@ public class UserController {
 		// 2. DB -> 조회
 		User userEntity =  userRepository.mLogin(dto.getUsername(), dto.getPassword());
 		
-		if(userEntity == null) {
-			return "redirect:/loginForm";
-		}else {
+		System.out.println("에러사이즈:" + bindingResult.getFieldErrors().size());
+		
+		if( bindingResult.hasErrors() ) {
+			Map<String, String> errorMap = new HashMap<>();
+			for(FieldError error : bindingResult.getFieldErrors()) {
+				errorMap.put(error.getField(), error.getDefaultMessage());
+				System.out.println("필드:" + error.getField());
+				System.out.println("메시지:" + error.getDefaultMessage());
+			}
+			model.addAttribute("errorMap", errorMap);
+			return "error/error";
+		} 
 			
-			session.setAttribute("principal", userEntity);
-			return "redirect:/home";
-		}
+		session.setAttribute("principal", userEntity);
+		return "redirect:/home";
 	}
 	
 	@PostMapping("/join")
-	public String join(JoinReqDto dto) { // username=love&password=1234&email=love@nate.com
-		if ( dto.getUsername() == null || 
-			 dto.getPassword() == null ||
-			 dto.getEmail() == null ||
-			 !dto.getUsername().equals("") ||
-			 !dto.getPassword().equals("") ||
-			 !dto.getEmail().equals("")
-		) {
-			return "error/error"; // 컨트롤러는 페이지만 리턴할 수 밖에 없다
+	public String join(@Valid JoinReqDto dto, BindingResult bindingResult, Model model) { 
+		// @Valid를 걸면 JoinReqDto 에 있는 annotation을 자동으로 검증한다
+		// 검증을 통해 실패한 것을 bindingResult에 담아준다. 
+		
+		System.out.println("에러사이즈:" + bindingResult.getFieldErrors().size());
+		
+		if( bindingResult.hasErrors() ) {
+			Map<String, String> errorMap = new HashMap<>();
+			for(FieldError error : bindingResult.getFieldErrors()) {
+				errorMap.put(error.getField(), error.getDefaultMessage());
+				System.out.println("필드:" + error.getField());
+				System.out.println("메시지:" + error.getDefaultMessage());
+			}
+			model.addAttribute("errorMap", errorMap);
+			return "error/error";
 		}
 		
 		userRepository.save(dto.toEntity());
