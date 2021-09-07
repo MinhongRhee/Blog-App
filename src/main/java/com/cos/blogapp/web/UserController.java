@@ -11,43 +11,20 @@ import com.cos.blogapp.domain.user.UserRepository;
 import com.cos.blogapp.web.dto.JoinReqDto;
 import com.cos.blogapp.web.dto.LoginReqDto;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Controller
 public class UserController {
 
-	private UserRepository userRepository;
-	private HttpSession session;
+	private final UserRepository userRepository;
+	private final HttpSession session;
 	
-	// DI
-	public UserController(UserRepository userRepository, HttpSession session) {
-		this.userRepository = userRepository;
-		this.session = session;
-	}
-	
-	@GetMapping("/test/query/join")
-	public void testQueryJoin() {
-		userRepository.join("cos", "1234", "cos@nate.com");
-	}
-	
-	@GetMapping("/test/join")
-	public void testJoin() {
-		User user = new User();
-		user.setUsername("ssar");
-		user.setPassword("1234");
-		user.setEmail("ssar@nate.com");
-		
-		// insert into user(username, password, email) values('ssar', '1234', 'ssar@nate.com');
-		userRepository.save(user);
-	}
-	
-	@GetMapping("/home")
+	@GetMapping({"/", "/home"})
 	public String home() {
 		return "home";
 	}
-	
-	// /WEB-INF/views/user/login.jsp
-	// /WEB-INF/views/login.jsp
-	
-	//  /WEB-INF/views/user/login.jsp
+
 	@GetMapping("/loginForm")
 	public String loginForm() {
 		return "user/loginForm";
@@ -78,6 +55,16 @@ public class UserController {
 	
 	@PostMapping("/join")
 	public String join(JoinReqDto dto) { // username=love&password=1234&email=love@nate.com
+		if ( dto.getUsername() == null || 
+			 dto.getPassword() == null ||
+			 dto.getEmail() == null ||
+			 !dto.getUsername().equals("") ||
+			 !dto.getPassword().equals("") ||
+			 !dto.getEmail().equals("")
+		) {
+			return "error/error"; // 컨트롤러는 페이지만 리턴할 수 밖에 없다
+		}
+		
 		userRepository.save(dto.toEntity());
 		return "redirect:/loginForm"; // 리다이렉션 (300)
 	}
