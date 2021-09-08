@@ -45,17 +45,15 @@ public class UserController {
 	}
 	
 	@PostMapping("/login")
-	public @ResponseBody String login(@Valid LoginReqDto dto, BindingResult bindingResult, Model model) {	
+	public @ResponseBody String login(@Valid LoginReqDto dto, BindingResult bindingResult) {	
 		System.out.println("에러사이즈:" + bindingResult.getFieldErrors().size());
 
 		if( bindingResult.hasErrors() ) {
 			Map<String, String> errorMap = new HashMap<>();
 			for(FieldError error : bindingResult.getFieldErrors()) {
 				errorMap.put(error.getField(), error.getDefaultMessage());
-				System.out.println("필드:" + error.getField());
-				System.out.println("메시지:" + error.getDefaultMessage());
-			}	
-			model.addAttribute("errorMap", errorMap);
+			}
+			
 			return Script.back(errorMap.toString());
 		} 
 
@@ -66,12 +64,12 @@ public class UserController {
 		} else { 
 			
 			session.setAttribute("principal", userEntity);
-			return Script.href("/","로그인 되었습니다");
+			return Script.href("/","로그인 성공");
 		}		
 	}
 	
 	@PostMapping("/join")
-	public @ResponseBody String join(@Valid JoinReqDto dto, BindingResult bindingResult, Model model) { 
+	public @ResponseBody String join(@Valid JoinReqDto dto, BindingResult bindingResult) { 
 		// @Valid를 걸면 JoinReqDto 에 있는 annotation을 자동으로 검증한다
 		// 검증을 통해 실패한 것을 bindingResult에 담아준다. 
 		
@@ -83,11 +81,8 @@ public class UserController {
 			Map<String, String> errorMap = new HashMap<>();
 			for(FieldError error : bindingResult.getFieldErrors()) {
 				errorMap.put(error.getField(), error.getDefaultMessage());
-				System.out.println("필드:" + error.getField());
-				System.out.println("메시지:" + error.getDefaultMessage());
 			}
 			
-			model.addAttribute("errorMap", errorMap);
 			return Script.back(errorMap.toString());
 		}
 		
