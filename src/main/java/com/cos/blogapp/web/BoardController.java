@@ -49,8 +49,9 @@ public class BoardController {
 			}	
 			return Script.back(errorMap.toString());
 		} 
-		
 		System.out.println("title : " + dto.getTitle());
+		dto.setContent(dto.getContent().replaceAll("<p>",""));
+		dto.setContent(dto.getContent().replaceAll("</p>",""));
 		System.out.println("content : " + dto.getContent());
 		
 		
