@@ -29,7 +29,14 @@ public class UserController {
 
 	private final UserRepository userRepository;
 	private final HttpSession session;
-
+	
+	@GetMapping("/logout")
+	public String logout() {
+		// return "board/list"; // 게시글 목록 화면에 데이터 x
+		session.invalidate(); // 세션 무효화(jsessionid에 있는 값을 비우는 것)
+		return "redirect:/";
+	}
+	
 	@GetMapping("/loginForm")
 	public String loginForm() {
 		return "user/loginForm";
@@ -48,8 +55,7 @@ public class UserController {
 			Map<String, String> errorMap = new HashMap<>();
 			for(FieldError error : bindingResult.getFieldErrors()) {
 				errorMap.put(error.getField(), error.getDefaultMessage());
-			}
-			
+			}	
 			return Script.back(errorMap.toString());
 		} 
 		
