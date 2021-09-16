@@ -48,15 +48,10 @@ public class BoardController {
 //				.orElse(new Board(100, "글없어요", "글없어요", null));
 		
 		// 2. orElseThrow
-
-		
 		Board boardEntity = boardRepository.findById(id)
-				.orElseThrow(new Supplier<MyNotFoundException>() {
-					@Override
-					public MyNotFoundException get() {
-						return new MyNotFoundException(id +"를 찾을 수 없습니다");
-					}
-				});
+				.orElseThrow(() -> new MyNotFoundException(id+"못찾았어요") );
+				// {} 사용 시 여러 줄 작성 가능, but return 삽입
+				// {} 생략 시 한줄만 작성 가능, return 생략
 		
 		model.addAttribute("boardEntity", boardEntity);
 		return "board/detail";
