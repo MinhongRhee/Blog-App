@@ -2,7 +2,6 @@ package com.cos.blogapp.web;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -14,9 +13,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.cos.blogapp.domain.board.Board;
@@ -35,6 +36,15 @@ public class BoardController {
 	// DI
 	private final BoardRepository boardRepository;
 	private final HttpSession session;
+	
+	// RestFul API 주소 설계 방식
+//	@GetMapping("/board/1/comment")
+	
+	// DELETE FROM board WHERE id = ?
+	@DeleteMapping("/board/{id}")
+	
+	// UPDATE board SET title = ?, content = ? WHERE id = ?
+	@PutMapping("/board/{id}")
 	
 	// 쿼리스트링, 패스var => where 에 걸리는 친구들
 	// 1. 컨트롤러 선정, 2. Http Method 선정, 3. 받을 데이터가 있는지!! ( body, 쿼리스트링, 패스var )
@@ -62,7 +72,7 @@ public class BoardController {
 		
 		User principal = (User) session.getAttribute("principal");
 		
-		// 인증체크
+		// 인증, 권한체크(공통로직)
 		if(principal == null) { // 로그인 안됨
 			return Script.href("/loginForm", "잘못된 접근입니다");
 		}

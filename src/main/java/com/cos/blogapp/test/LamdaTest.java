@@ -6,7 +6,7 @@ package com.cos.blogapp.test;
 // 3. 쓰면 코드가 간결해지고, 타입을 몰라도 된다.
 
 interface MySupplier {
-	void get();
+	void get(); 
 }
 
 public class LamdaTest {
