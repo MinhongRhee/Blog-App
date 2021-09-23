@@ -42,9 +42,13 @@ public class BoardController {
 	
 	// DELETE FROM board WHERE id = ?
 	@DeleteMapping("/board/{id}")
+	public @ResponseBody String deleteByID(@PathVariable int id) {
+		boardRepository.deleteById(id);
+		return "ok"; // @ResponseBody 데이터 리턴!! String = text/plain
+	}
 	
 	// UPDATE board SET title = ?, content = ? WHERE id = ?
-	@PutMapping("/board/{id}")
+	// @PutMapping("/board/{id}")
 	
 	// 쿼리스트링, 패스var => where 에 걸리는 친구들
 	// 1. 컨트롤러 선정, 2. Http Method 선정, 3. 받을 데이터가 있는지!! ( body, 쿼리스트링, 패스var )
@@ -59,7 +63,7 @@ public class BoardController {
 		
 		// 2. orElseThrow
 		Board boardEntity = boardRepository.findById(id)
-				.orElseThrow(() -> new MyNotFoundException(id+"못찾았어요") );
+				.orElseThrow(()-> new MyNotFoundException(id+" 못찾았어요") );
 				// {} 사용 시 여러 줄 작성 가능, but return 삽입
 				// {} 생략 시 한줄만 작성 가능, return 생략
 		
