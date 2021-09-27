@@ -7,18 +7,25 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.cos.blogapp.domain.board.Board;
 import com.cos.blogapp.domain.user.User;
 import com.cos.blogapp.domain.user.UserRepository;
+import com.cos.blogapp.handler.exception.MyAsyncNotFoundException;
 import com.cos.blogapp.util.MyAlgorithm;
 import com.cos.blogapp.util.SHA256;
 import com.cos.blogapp.util.Script;
+import com.cos.blogapp.web.dto.BoardSaveReqDto;
+import com.cos.blogapp.web.dto.CMRespDto;
 import com.cos.blogapp.web.dto.JoinReqDto;
 import com.cos.blogapp.web.dto.LoginReqDto;
 
@@ -30,6 +37,42 @@ public class UserController {
 
 	private final UserRepository userRepository;
 	private final HttpSession session;
+	
+	@PutMapping("/user/{id}")
+	public @ResponseBody CMRespDto<String> update(@PathVariable int id, @Valid @RequestBody JoinReqDto dto, BindingResult bindingResult) {
+		
+		// 인증
+		User principal = (User) session.getAttribute("principal");
+
+		if (principal == null) { // 로그인 안됨
+			throw new MyAsyncNotFoundException("인증이 되지 않았습니다.");
+		}
+		
+		// 권한
+		User userEntity = userRepository.findById(id)
+				.orElseThrow(() -> new MyAsyncNotFoundException("해당 계정을 찾을 수가 없습니다."));
+		if (principal.getId() != userEntity.getId()) {
+			throw new MyAsyncNotFoundException("해당 계정을 수정할 권한이 없습니다.");
+		}
+		
+		// 유효성 검사
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errorMap = new HashMap<>();
+			for (FieldError error : bindingResult.getFieldErrors()) {
+				errorMap.put(error.getField(), error.getDefaultMessage());
+			}
+			throw new MyAsyncNotFoundException(errorMap.toString());
+		}
+		
+		User user = dto.toEntity();
+		String encpassword = SHA256.encrypt(dto.getPassword(), MyAlgorithm.SHA256);
+		user.setPassword(encpassword);
+		user.setId(id);		
+		userRepository.save(user);
+		
+		session.invalidate();
+		return new CMRespDto<>(1, "회원 정보 수정 완료", null);
+	}
 	
 	@GetMapping("/user/{id}")
 	public String userinfo(@PathVariable int id) {

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.cos.blogapp.domain.board.Board;
@@ -37,7 +39,50 @@ public class BoardController {
 	// DI
 	private final BoardRepository boardRepository;
 	private final HttpSession session;
+	
+	@PutMapping("/board/{id}")
+	public @ResponseBody CMRespDto<String> update(@PathVariable int id, @Valid @RequestBody BoardSaveReqDto dto, BindingResult bindingResult) {
+		
+		// 인증
+		User principal = (User) session.getAttribute("principal");
 
+		if (principal == null) { // 로그인 안됨
+			throw new MyAsyncNotFoundException("인증이 되지 않았습니다.");
+		}
+
+		// 권한
+		Board boardEntity = boardRepository.findById(id)
+				.orElseThrow(() -> new MyAsyncNotFoundException("해당 글을 찾을 수가 없습니다."));
+		if (principal.getId() != boardEntity.getUser().getId()) {
+			throw new MyAsyncNotFoundException("해당글을 수정할 권한이 없습니다.");
+		}
+		
+		// 유효성 검사
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errorMap = new HashMap<>();
+			for (FieldError error : bindingResult.getFieldErrors()) {
+				errorMap.put(error.getField(), error.getDefaultMessage());
+			}
+			throw new MyAsyncNotFoundException(errorMap.toString());
+		}
+		
+		Board board = dto.toEntity(principal);
+		board.setId(id); // update의 핵심
+		
+		boardRepository.save(board);
+		
+		return new CMRespDto<>(1,"업데이트 성공", null);
+	}
+	
+	@GetMapping("/board/{id}/updateForm")
+	public String boardUpdateForm(@PathVariable int id, Model model) {
+		// 게시글 정보를 가지고 가야함.
+		Board boardEntity = boardRepository.findById(id)
+				.orElseThrow(()-> new MyNotFoundException(id + "번호의 게시글을 찾을 수 없습니다."));
+		model.addAttribute("boardEntity", boardEntity);
+		return "board/updateForm";
+	}
+	
 	// API(AJAX) 요청
 	@DeleteMapping("/board/{id}")
 	public @ResponseBody CMRespDto<String> deleteByID(@PathVariable int id) {
@@ -63,9 +108,6 @@ public class BoardController {
 		}
 		return new CMRespDto<String>(1, "성공", null); // CMRespDto 는 object를 리턴 => JSON 형태
 	}
-
-	// UPDATE board SET title = ?, content = ? WHERE id = ?
-	// @PutMapping("/board/{id}")
 
 	// 쿼리스트링, 패스var => where 에 걸리는 친구들
 	// 1. 컨트롤러 선정, 2. Http Method 선정, 3. 받을 데이터가 있는지!! ( body, 쿼리스트링, 패스var )
