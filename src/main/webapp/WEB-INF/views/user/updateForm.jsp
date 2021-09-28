@@ -4,19 +4,14 @@
 <%@ include file="../layout/header.jsp"%>
 
 <div class="container">
-	<form onsubmit="update(event, ${sessionScope.principal.id})">
+	<form onsubmit="update(event,${sessionScope.principal.id })">
 		<div class="form-group">
-			<input type="text"  id="username" value="${sessionScope.principal.username}"
+			<input type="text" " id="username" value="${sessionScope.principal.username}"
 				class="form-control" placeholder="Enter username"
 				required="required" maxlength="20" readonly="readonly">
 		</div>
 		<div class="form-group">
-			<input type="password"  id="password" value="${sessionScope.principal.password}"
-				class="form-control" placeholder="Enter password"
-				maxlength="20">
-		</div>
-		<div class="form-group">
-			<input type="email" id="email" value="${sessionScope.principal.email}"
+			<input type="email"  id="email" value="${sessionScope.principal.email}"
 				class="form-control" placeholder="Enter email">
 		</div>
 		<button type="submit" class="btn btn-primary">회원수정</button>
@@ -25,9 +20,8 @@
 <script>
 	async function update(event, id) {
 		event.preventDefault();
+		
 		let userUpdateDto = {
-				username: document.querySelector("#username").value,
-				password: document.querySelector("#password").value,
 				email: document.querySelector("#email").value
 		};
 		
@@ -48,8 +42,8 @@
 		console.log(parseResponse)
 		
 		if(parseResponse.code == 1){
-			alert("회원 정보 수정 완료");
-			location.href="/logout"
+			alert("업데이트 완료");
+			location.href="/";
 		} else {
 			alert(parseResponse.msg);
 		}

@@ -54,7 +54,7 @@ public class BoardController {
 		Board boardEntity = boardRepository.findById(id)
 				.orElseThrow(() -> new MyAsyncNotFoundException("해당 글을 찾을 수가 없습니다."));
 		if (principal.getId() != boardEntity.getUser().getId()) {
-			throw new MyAsyncNotFoundException("해당글을 수정할 권한이 없습니다.");
+			throw new MyAsyncNotFoundException("게시글의 주인이 아닙니다.");
 		}
 		
 		// 유효성 검사
@@ -133,7 +133,7 @@ public class BoardController {
 
 		User principal = (User) session.getAttribute("principal");
 
-		// 인증, 권한체크(공통로직)
+		// 인증 체크(공통로직)
 		if (principal == null) { // 로그인 안됨
 			return Script.href("/loginForm", "잘못된 접근입니다");
 		}
