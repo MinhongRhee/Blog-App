@@ -17,10 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.cos.blogapp.domain.user.User;
-import com.cos.blogapp.domain.user.UserRepository;
 import com.cos.blogapp.handler.exception.MyAsyncNotFoundException;
-import com.cos.blogapp.util.MyAlgorithm;
-import com.cos.blogapp.util.SHA256;
+import com.cos.blogapp.service.UserService;
 import com.cos.blogapp.util.Script;
 import com.cos.blogapp.web.dto.CMRespDto;
 import com.cos.blogapp.web.dto.JoinReqDto;
@@ -33,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @Controller
 public class UserController {
 
-	private final UserRepository userRepository;
+	private final UserService userService;
 	private final HttpSession session;
 	
 	@PutMapping("/user/{id}")
@@ -42,13 +40,6 @@ public class UserController {
 		User principal = (User) session.getAttribute("principal");
 		if (principal == null) { // 로그인 안됨
 			throw new MyAsyncNotFoundException("인증이 되지 않았습니다.");
-		}
-		
-		// 권한
-		User userEntity = userRepository.findById(id)
-				.orElseThrow(() -> new MyAsyncNotFoundException("해당 계정을 찾을 수가 없습니다."));
-		if (principal.getId() != userEntity.getId()) {
-			throw new MyAsyncNotFoundException("회원 정보를 수정할 권한이 없습니다.");
 		}
 		
 		// 유효성 검사
@@ -60,11 +51,8 @@ public class UserController {
 			throw new MyAsyncNotFoundException(errorMap.toString());
 		}
 		
-		// 핵심로직
-		principal.setEmail(dto.getEmail());
+		userService.회원수정(id, principal, dto);
 		session.setAttribute("principal", principal); // 세션값 변경
-		
-		userRepository.save(principal);
 		
 		return new CMRespDto<>(1, "성공", null);
 	}
@@ -105,17 +93,12 @@ public class UserController {
 			}	
 			return Script.back(errorMap.toString());
 		} 
-		
-		User userEntity =  
-				userRepository.mLogin(
-						dto.getUsername(), 
-						SHA256.encrypt(dto.getPassword(), MyAlgorithm.SHA256));
-		
-		if(userEntity == null) { 	// username, password 잘못 기입
+
+		if(userService.로그인(dto) == null) { 	// username, password 잘못 기입
 			return Script.back("아이디 혹은 비밀번호를 잘못 입력하였습니다");
 		} else { 
 			// 세션이 날라가는 조건 : 1. session.invalidate(), 2. 브라우저를 닫으면 날라감
-			session.setAttribute("principal", userEntity);
+			session.setAttribute("principal", userService.로그인(dto));
 			return Script.href("/","로그인 성공");
 		}		
 	}
@@ -132,10 +115,7 @@ public class UserController {
 			return Script.back(errorMap.toString());
 		}
 		
-		String encpassword = SHA256.encrypt(dto.getPassword(), MyAlgorithm.SHA256);
-		
-		dto.setPassword(encpassword);
-		userRepository.save(dto.toEntity());
+		userService.회원가입(dto);
 		return Script.href( "/loginForm" ); // 리다이렉션 (300)
 	}
 	
