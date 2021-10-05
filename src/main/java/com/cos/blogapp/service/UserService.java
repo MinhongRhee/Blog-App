@@ -26,16 +26,10 @@ public class UserService {
 	
 	@Transactional(rollbackFor = MyAsyncNotFoundException.class)
 	public void 회원수정(int id, User principal, UserUpdateDto dto) {
-		// 권한
-		User userEntity = userRepository.findById(id)
-				.orElseThrow(() -> new MyAsyncNotFoundException("해당 계정을 찾을 수가 없습니다."));
-		if (principal.getId() != userEntity.getId()) {
-			throw new MyAsyncNotFoundException("회원 정보를 수정할 권한이 없습니다.");
-		}
-		
-		principal.setEmail(dto.getEmail());		
-		userRepository.save(principal);
-	}
+		User userEntity = userRepository.findById(principal.getId())
+				.orElseThrow(()->new MyAsyncNotFoundException("회원정보를 찾을 수 없습니다"));
+		userEntity.setEmail(dto.getEmail());
+	} // 더티 체킹
 	
 	public User 로그인(LoginReqDto dto) {		
 		return userRepository.mLogin(	dto.getUsername(), SHA256.encrypt(dto.getPassword(), MyAlgorithm.SHA256));

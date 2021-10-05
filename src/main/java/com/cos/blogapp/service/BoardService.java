@@ -50,12 +50,11 @@ public class BoardService {
 		if (principal.getId() != boardEntity.getUser().getId()) {
 			throw new MyAsyncNotFoundException("해당 게시글의 주인이 아닙니다.");
 		}
-								
-		Board board = dto.toEntity(principal);
-		board.setId(id); // update의 핵심
-				
-		boardRepository.save(board);
-	} // 트랜잭션 종료
+		
+		// 영속화된 데이터를 변경하면 !!						
+		boardEntity.setTitle(dto.getTitle());
+		boardEntity.setContent(dto.getContent());
+	} // 트랜잭션 종료 (더티체킹)
 	
 	public Board 게시글수정페이지이동(int id) {
 		// 게시글 정보를 가지고 가야함.
