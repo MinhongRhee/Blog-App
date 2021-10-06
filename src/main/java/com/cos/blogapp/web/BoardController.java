@@ -94,9 +94,10 @@ public class BoardController {
 	// 1. 컨트롤러 선정, 2. Http Method 선정, 3. 받을 데이터가 있는지!! ( body, 쿼리스트링, 패스var )
 	// 4. DB에 접근을 해야하면 Model 접근하기 orElse Model에 접근할 필요가 없다.
 	@GetMapping("/board/{id}")
-	public String detail(@PathVariable int id, Model model) {	
+	public String detail(@PathVariable int id, Model model) {
+		// Board 객체에 존재하는 것(Board 존재, User 존재, List<Comment> X)
 		model.addAttribute("boardEntity", boardService.게시글상세보기(id));
-		return "board/detail";
+		return "board/detail"; // ViewResolver 발동
 	}
 
 	@PostMapping("/board")
